@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from ttkbootstrap import Style
 from quizz_data import quiz_data
+import winreg
 
 # Function to display the current question and choices
 def show_question():
@@ -59,13 +60,28 @@ def start_quiz(category_index):
     quiz_frame.pack()  # Show quiz frame
     show_question()  # Show the first question
 
+# Detect the system's theme preference
+def detect_system_preference():
+    registry_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, registry_key) as key:
+            value, _ = winreg.QueryValueEx(key, 'AppsUseLightTheme')
+            return "light" if value == 1 else "dark"
+    except FileNotFoundError:
+        # Key not found, unable to determine preference
+        return "unknown"
+
 # Create the main window
 root = tk.Tk()
 root.title("Quiz App")
 root.geometry("600x600")
 
-# Set the style theme
-style = Style(theme="flatly")
+# Set the style theme based on the user's system preference
+theme_preference = detect_system_preference()
+if theme_preference == "light":
+    style = Style(theme="flatly")
+else:
+    style = Style(theme="darkly")
 
 # Configure font size for labels and buttons
 style.configure("TLabel", font=("Helvetica", 20))
