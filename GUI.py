@@ -1,8 +1,9 @@
+import winreg
+import random
 import tkinter as tk
 from tkinter import messagebox, ttk
 from ttkbootstrap import Style
 from quizz_data import quiz_data
-import winreg
 
 # Function to display the current question and choices
 def show_question():
@@ -12,6 +13,7 @@ def show_question():
 
     # Display the choices on the buttons
     choices = question["options"]
+    random.shuffle(choices)
     for i in range(4):
         choice_btns[i].config(text=choices[i], state="normal")  # Update choice buttons text
 
@@ -58,6 +60,7 @@ def start_quiz(category_index):
     current_category = quiz_data[category_index]  # Get the selected category
     category_frame.pack_forget()  # Hide category selection frame
     quiz_frame.pack()  # Show quiz frame
+    random.shuffle(current_category["questions"]) # Shuffle the question bank
     show_question()  # Show the first question
 
 # Detect the system's theme preference
@@ -74,7 +77,7 @@ def detect_system_preference():
 # Create the main window
 root = tk.Tk()
 root.title("Quiz App")
-root.geometry("600x600")
+root.geometry("800x600")
 
 # Set the style theme based on the user's system preference
 theme_preference = detect_system_preference()
