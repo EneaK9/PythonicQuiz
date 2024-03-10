@@ -45,14 +45,22 @@ def check_answer(choice):
 # Function to move to the next question
 def next_question():
     global current_question
+    global score
     current_question += 1
     if current_question < len(current_category["questions"]):
         # If there are more questions, show the next question
         show_question()
     else:
         # If all questions have been answered, display the final score and end the quiz
-        messagebox.showinfo("Quiz Complete! ", "You have completed the quiz with a score of {}/{}".format(score, len(current_category["questions"])))
-        root.destroy()
+        if score/len(current_category["questions"]) >= 0.6:
+            messagebox.showinfo("Quiz Complete! ", "You have passed the quiz with a score of {}/{}".format(score, len(current_category["questions"])))
+        else:
+            messagebox.showinfo("Quiz Complete! ", "You have failed the quiz with a score of {}/{}. \nA score of 60% or more is required to pass.".format(score, len(current_category["questions"])))
+            retry = messagebox.askquestion("Retry?", "Would you like to retake the quiz?", icon="question")
+            if retry == "yes":
+                restart_quiz()
+            else:
+                root.destroy()
 
 # Function to start the quiz with the selected category
 def start_quiz(category_index):
@@ -62,6 +70,17 @@ def start_quiz(category_index):
     quiz_frame.pack()  # Show quiz frame
     random.shuffle(current_category["questions"]) # Shuffle the question bank
     show_question()  # Show the first question
+
+# Function to restart the quiz with the previously selected category
+def restart_quiz():
+    global score
+    global current_question
+    global current_category
+    random.shuffle(current_category["questions"])
+    score = 0
+    current_question = 0
+    score_label.config(text="Score: {}/{}".format(score, len(current_category["questions"])))
+    show_question()
 
 # Detect the system's theme preference
 def detect_system_preference():
