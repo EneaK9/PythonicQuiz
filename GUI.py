@@ -92,6 +92,14 @@ def detect_system_preference():
     except FileNotFoundError:
         # Key not found, unable to determine preference
         return "unknown"
+    
+# Function for submitting username
+def submit_username():
+    global username
+    username = username_field.get()
+    # Username frame is hidden and the cateory selection frame shows up
+    username_frame.pack_forget()
+    category_frame.pack()
 
 # Create the main window
 root = tk.Tk()
@@ -109,12 +117,29 @@ else:
 style.configure("TLabel", font=("Helvetica", 20))
 style.configure("TButton", font=("Helvetica", 16))
 
-# Create frames for category selection and quiz
+# Create frames for username creation, category selection and quiz
 category_frame = tk.Frame(root)
 quiz_frame = tk.Frame(root)
+username_frame = tk.Frame(root)
+
+# Create label for username creation
+username_label = ttk.Label(username_frame, text="Please enter a username").pack(pady=10)
+
+# Create a text field widget for the username creation
+username_field = ttk.Entry(username_frame, font = ("Helvetica", 16), width = 30)
+username_field.pack(pady=10)
+
+#Create a button to submit the username
+username_submit_bttn = ttk.Button(username_frame, text="Submit", command=submit_username).pack(pady=10)
+
+# Pack the username creation frame
+username_frame.pack(pady=180)
+
+# Initialize username as a blank string
+username = ""
 
 # Create label for category selection
-tk.Label(category_frame, text="Please select a category:", font=("Helvetica", 16)).pack(pady=10)
+tk.Label(category_frame, text="Please select a category", font=("Helvetica", 16)).pack(pady=10)
 
 # Create label for question display
 qs_label = ttk.Label(quiz_frame, anchor="center", wraplength=500, padding=10)
@@ -149,9 +174,6 @@ categories = [category["category"] for category in quiz_data]
 for i, category_name in enumerate(categories):
     button = ttk.Button(category_frame, text=category_name, command=lambda i=i: start_quiz(i))
     button.pack(pady=5)
-
-# Pack the category selection frame
-category_frame.pack()
 
 # Start the GUI event loop
 root.mainloop()
