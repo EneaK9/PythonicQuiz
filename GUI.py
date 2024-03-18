@@ -1,5 +1,8 @@
 import winreg
+import os
 import random
+import csv
+import time
 import tkinter as tk
 from tkinter import messagebox, ttk
 from ttkbootstrap import Style
@@ -46,16 +49,20 @@ def check_answer(choice):
 def next_question():
     global current_question
     global score
+    global start_time
+    global end_time
     current_question += 1
     if current_question < len(current_category["questions"]):
         # If there are more questions, show the next question
         show_question()
     else:
-        # If all questions have been answered, display the final score and end the quiz
+        # If all questions have been answered, display the final score and time and end the quiz
+        end_time = time.time()
+        quiz_duration = int(end_time - start_time)
         if score/len(current_category["questions"]) >= 0.6:
-            messagebox.showinfo("Quiz Complete! ", "You have passed the quiz with a score of {}/{}".format(score, len(current_category["questions"])))
+            messagebox.showinfo("Quiz Complete! ", "You finished the quiz in {} seconds. You have passed the quiz with a score of {}/{}.".format(quiz_duration, score, len(current_category["questions"])))
         else:
-            messagebox.showinfo("Quiz Complete! ", "You have failed the quiz with a score of {}/{}. \nA score of 60% or more is required to pass.".format(score, len(current_category["questions"])))
+            messagebox.showinfo("Quiz Complete! ", "You finished the quiz in {} seconds. You have failed the quiz with a score of {}/{}. \nA score of 60% or more is required to pass.".format(quiz_duration, score, len(current_category["questions"])))
             retry = messagebox.askquestion("Retry?", "Would you like to retake the quiz?", icon="question")
             if retry == "yes":
                 restart_quiz()
@@ -65,6 +72,8 @@ def next_question():
 # Function to start the quiz with the selected category
 def start_quiz(category_index):
     global current_category
+    global start_time
+    start_time = time.time()
     current_category = quiz_data[category_index]  # Get the selected category
     category_frame.pack_forget()  # Hide category selection frame
     quiz_frame.pack()  # Show quiz frame
@@ -76,6 +85,10 @@ def restart_quiz():
     global score
     global current_question
     global current_category
+    global start_time
+    global end_time
+    start_time = time.time()
+    end_time = 0
     random.shuffle(current_category["questions"])
     score = 0
     current_question = 0
@@ -174,6 +187,10 @@ categories = [category["category"] for category in quiz_data]
 for i, category_name in enumerate(categories):
     button = ttk.Button(category_frame, text=category_name, command=lambda i=i: start_quiz(i))
     button.pack(pady=5)
+
+# Initialize start and end times for the quiz
+start_time = 0
+end_time = 0
 
 # Start the GUI event loop
 root.mainloop()
