@@ -8,6 +8,22 @@ from tkinter import messagebox, ttk
 from ttkbootstrap import Style
 from quizz_data import quiz_data
 
+# Function to create quiz results file if it hasn't been created yet or is missing from directory
+def create_quiz_results_file(quiz_results):
+    if not os.path.exists(quiz_results):
+        with open(quiz_results, 'w', newline='') as results:
+            results_writer = csv.writer(results)
+            results_writer.writerow(['Username', 'Category', 'Score', 'Duration', 'Pass/Fail'])
+
+# Call function to create quiz results file
+create_quiz_results_file('quiz_results.csv')
+
+# Function to add results of the quiz to the results file
+def add_results(quiz_results, username, category, score, duration, pass_fail):
+    with open (quiz_results, 'a', newline='') as results:
+        results_writer = csv.writer(results)
+        results_writer.writerow([username, category, score, duration, pass_fail])
+
 # Function to display the current question and choices
 def show_question():
     # Get the current question from the selected category
@@ -51,6 +67,9 @@ def next_question():
     global score
     global start_time
     global end_time
+    global quiz_duration
+    global username
+    global current_category_name
     current_question += 1
     if current_question < len(current_category["questions"]):
         # If there are more questions, show the next question
@@ -60,8 +79,11 @@ def next_question():
         end_time = time.time()
         quiz_duration = int(end_time - start_time)
         if score/len(current_category["questions"]) >= 0.6:
+            add_results('quiz_results.csv', username, current_category_name, score, quiz_duration, pass_fail='Pass')
             messagebox.showinfo("Quiz Complete! ", "You finished the quiz in {} seconds. You have passed the quiz with a score of {}/{}.".format(quiz_duration, score, len(current_category["questions"])))
+            root.destroy()
         else:
+            add_results('quiz_results.csv', username, current_category_name, score, quiz_duration, pass_fail='Fail')
             messagebox.showinfo("Quiz Complete! ", "You finished the quiz in {} seconds. You have failed the quiz with a score of {}/{}. \nA score of 60% or more is required to pass.".format(quiz_duration, score, len(current_category["questions"])))
             retry = messagebox.askquestion("Retry?", "Would you like to retake the quiz?", icon="question")
             if retry == "yes":
@@ -73,7 +95,9 @@ def next_question():
 def start_quiz(category_index):
     global current_category
     global start_time
+    global current_category_name
     start_time = time.time()
+    current_category_name = categories[category_index]
     current_category = quiz_data[category_index]  # Get the selected category
     category_frame.pack_forget()  # Hide category selection frame
     quiz_frame.pack()  # Show quiz frame
@@ -87,8 +111,10 @@ def restart_quiz():
     global current_category
     global start_time
     global end_time
+    global quiz_duration
     start_time = time.time()
     end_time = 0
+    quiz_duration = 0
     random.shuffle(current_category["questions"])
     score = 0
     current_question = 0
@@ -149,7 +175,7 @@ username_submit_bttn = ttk.Button(username_frame, text="Submit", command=submit_
 username_frame.pack(pady=180)
 
 # Initialize username as a blank string
-username = ""
+username = ''
 
 # Create label for category selection
 tk.Label(category_frame, text="Please select a category", font=("Helvetica", 16)).pack(pady=10)
@@ -181,6 +207,7 @@ next_btn.pack(pady=10)
 # Initialize current question index
 current_question = 0
 current_category = None
+current_category_name = ''
 
 # Create buttons for selecting category
 categories = [category["category"] for category in quiz_data]
@@ -188,9 +215,10 @@ for i, category_name in enumerate(categories):
     button = ttk.Button(category_frame, text=category_name, command=lambda i=i: start_quiz(i))
     button.pack(pady=5)
 
-# Initialize start and end times for the quiz
+# Initialize start and end times for the quiz, and the duration
 start_time = 0
 end_time = 0
+quiz_duration = 0
 
 # Start the GUI event loop
 root.mainloop()
